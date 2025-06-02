@@ -8,6 +8,7 @@
   chapterLink.textContent = chapterName;
  
   ul.appendChild(chapterLink);
+  document.getElementById('chapter-name').value = '';
  };
 
  const button = document.getElementById('add-chapter');
