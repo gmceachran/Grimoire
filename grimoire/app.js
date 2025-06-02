@@ -1,6 +1,12 @@
 function addChapter() { 
   const ul = document.getElementById('contents-list');
   const chapterName = document.getElementById('name-input').value;
+
+  if (!chapterName) {
+    alert('Please enter a title.')
+    return
+  };
+
   const chapterLink = document.createElement('a');
   
   chapterLink.href = 'chapter.html';
