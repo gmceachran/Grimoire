@@ -1,0 +1,24 @@
+{
+  "name": "grimoire-data",
+  "version": "1.0.0",
+  "description": "Editable encyclopedia app for the Grimoire project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmceachran/Grimoire.git"
+  },
+  "author": "Gabriel McEachran",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gmceachran/Grimoire/issues"
+  },
+  "homepage": "https://github.com/gmceachran/Grimoire#readme",
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  }
+}
