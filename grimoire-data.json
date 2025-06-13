@@ -1,3 +1,34 @@
 {
-  "chapters": []
+  "chapters": [
+    {
+      "id": "ch1",
+      "name": "Chapter 1",
+      "slug": "chapter-1"
+    },
+    {
+      "id": "ch2",
+      "name": "Chapter 2",
+      "slug": "chapter-2"
+    },
+    {
+      "id": "ch3",
+      "name": "Chapter 3",
+      "slug": "chapter-3"
+    },
+    {
+      "id": "ch4",
+      "name": "Chapter 4",
+      "slug": "chapter-4"
+    },
+    {
+      "id": "ch5",
+      "name": "Chapter 5",
+      "slug": "chapter-5"
+    },
+    {
+      "id": "ch6",
+      "name": "Chapter 6",
+      "slug": "chapter-6"
+    }
+  ]
 }
