@@ -1,30 +1,54 @@
-// make sure this file includes fetch('api/chapters', { method: 'POST' }) when adding chapters.
+async function loadChapters() {
+  try {
+    const res = await fetch('/api/chapters')
+    if (!res.ok) throw new Error('Failed to load chapters.')
+    
+    const chapters = await res.json()
+    const ul = document.getElementById('contents-list')
+    ul.innerHTML = ''
 
-function addChapter() {
-  const ul = document.getElementById('contents-list')
-  const chapterName = document.getElementById('name-input').value
+    chapters.forEach(chapter => {
+      const li = document.createElement('li')
+      const link = document.createElement('a')
+      link.href = 'chapter.html'
+      link.id = chapter.id
+      link.textContent = chapter.name
+      li.appendChild(link)
+      ul.appendChild(li)
+    })
+  } catch (err) {
+    alert(err.message)
+  }
+}
 
-  if (!chapterName) {
-    alert('Please enter a title.')
+async function addChapter() {
+  const input = document.getElementById('input')
+  const name = input.value.trim()
+
+  if (!name) {
+    alert('Please enter a valid name.')
     return
   }
 
-  const chapterLink = document.createElement('a')
+  const res = await fetch('/api/chapters', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  })
 
-  chapterLink.href = 'chapter.html'
-  chapterLink.id = chapterName
-  chapterLink.textContent = chapterName
+  if (!res.ok) {
+    const err = await res.json()
+    alert(err.error || 'Failed to load chapters.')
+    return
+  }
 
-  ul.appendChild(chapterLink)
-  ul.appendChild(document.createElement('br'))
-  document.getElementById('name-input').value = ''
+  input.value = ''
+  loadChapters()
 }
 
-const button = document.getElementById('add-chapter')
-button.addEventListener('click', addChapter)
-
-document.getElementById('name-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    addChapter()
-  }
+document.getElementById('add-chapter').addEventListener('click', addChapter)
+document.getElementById('input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addChapter()
 })
+
+loadChapters()

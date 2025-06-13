@@ -20,5 +20,8 @@
   "homepage": "https://github.com/gmceachran/Grimoire#readme",
   "devDependencies": {
     "prettier": "^3.5.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
   }
 }
