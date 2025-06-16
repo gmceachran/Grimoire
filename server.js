@@ -40,6 +40,18 @@ app.post('/api/chapters', (req, res) => {
   res.status(201).json(newChapter)
 })
 
+app.delete('/api/chapters/:id', (req, res) => {
+  const id = req.params.id
+
+  const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'))
+  const filteredChapters = data.chapters.filter(ch => ch.id !== id)
+
+  data.chapters = filteredChapters
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
+
+  res.status(200).json({ success: true })
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`)
 })
