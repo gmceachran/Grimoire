@@ -11,6 +11,9 @@ app.use(express.json())
 const DATA_FILE = path.join(__dirname, 'grimoire-data.json')
 const TEMPLATE_FILE = path.join(__dirname, 'grimoire-data.template.json')
 
+// Data cache
+let dataCache = null
+
 // Initialize data file from template if it doesn't exist
 function initializeDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
@@ -28,48 +31,86 @@ function initializeDataFile() {
   }
 }
 
+// Load data into cache
+function loadData() {
+  try {
+    dataCache = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'))
+  } catch (error) {
+    console.error('Error loading data:', error)
+    dataCache = { chapters: [], name: 'Grimoire' }
+  }
+}
+
+// Save data to file and update cache
+function saveData() {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(dataCache, null, 2))
+}
+
 // Initialize on server start
 initializeDataFile()
+loadData()
+
+app.get('/api/name', (req, res) => {
+  try {
+    if (!dataCache.name) {
+      return res.status(404).json({ error: 'Project name not found in data file' })
+    }
+    res.json(dataCache.name)
+  } catch (error) {
+    console.error('Error reading project name:', error)
+    res.status(500).json({ error: 'Failed to load project name' })
+  }
+})
 
 app.get('/api/chapters', (req, res) => {
-  const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'))
-  res.json(data.chapters)
+  res.json(dataCache.chapters)
+})
+
+app.post('/api/name', (req, res) => {
+  const { name } = req.body
+
+  if (!name || typeof name !== 'string') {
+    return res.status(400).json({ error: 'Invalid project name.' })
+  }
+
+  dataCache.name = name
+  saveData()
+  res.status(200).json({ success: true })
 })
 
 app.post('/api/chapters', (req, res) => {
   const { name } = req.body
 
   if (!name || typeof name !== 'string') {
-    return res.status(400).json({ error: 'Invalid Chapter name.' })
+    return res.status(400).json({ error: 'Invalid chapter name.' })
   }
 
-  const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'))
-
-  const exists = data.chapters.some((ch) => ch.name === name)
+  const exists = dataCache.chapters.some((ch) => ch.name === name)
   if (exists) {
     return res.status(409).json({ error: 'Chapter already exists.' })
   }
 
   const newChapter = {
-    id: `ch${data.chapters.length + 1}`,
+    id: `ch${Date.now()}`,
     name,
     slug: name.toLowerCase().replace(/\s+/g, '-')
   }
 
-  data.chapters.push(newChapter)
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
+  dataCache.chapters.push(newChapter)
+  saveData()
   res.status(201).json(newChapter)
 })
 
 app.delete('/api/chapters/:id', (req, res) => {
   const id = req.params.id
 
-  const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'))
-  const filteredChapters = data.chapters.filter(ch => ch.id !== id)
+  const chapterIndex = dataCache.chapters.findIndex(ch => ch.id === id)
+  if (chapterIndex === -1) {
+    return res.status(404).json({ error: 'Chapter not found' })
+  }
 
-  data.chapters = filteredChapters
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
-
+  dataCache.chapters.splice(chapterIndex, 1)
+  saveData()
   res.status(200).json({ success: true })
 })
 

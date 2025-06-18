@@ -15,6 +15,44 @@ async function loadChapters() {
   }
 }
 
+async function loadProjectName() {
+  try {
+    const res = await fetch('/api/name')
+    if (!res.ok) throw new Error('Failed to load Project Name')
+    
+    const name = await res.json()
+    renderName(name)
+  } catch (err) {
+    alert(err.message)
+  }
+}
+
+async function updateProjectName(title, inputElement) {
+  const name = title.trim()
+  if (!name) {
+    console.log('Empty title ignored. Retaining previous title.')
+    return
+  }
+
+  const res = await fetch('/api/name', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  })
+
+  if (!res.ok) {
+    console.error('Failed to update project name')
+    return
+  }
+
+  hasUnsavedChanges = false
+  
+  // Defocus the input after successful save
+  if (document.activeElement === inputElement) {
+    inputElement.blur()
+  }
+}
+
 // Create a new chapter and add it to the server
 async function addChapter() {
   const input = document.getElementById('input')
@@ -68,6 +106,8 @@ async function deleteChapter(id) {
 // ========================================
 
 let chapters = []
+let hasUnsavedChanges = false
+let suppressInputEvent = false
 const ul = document.getElementById('contents-list')
 
 function createChapterListItem(chapter) {
@@ -99,6 +139,13 @@ function renderChapters(serverChapters) {
   })
 }
 
+function renderName(name) {
+  const input = document.getElementById('project-title')
+  suppressInputEvent = true
+  input.value = name
+  suppressInputEvent = false
+}
+
 function addChapterToList(chapter) {
   chapters.push(chapter)
   const li = createChapterListItem(chapter)
@@ -117,6 +164,27 @@ function deleteChapterFromList(chapterId) {
 // ========================================
 // EVENT LISTENERS - User Interactions
 // ========================================
+
+// Handles title input post request on timeout
+let debounceTimer
+
+document.getElementById('project-title').addEventListener('input', (e) => {
+  if (suppressInputEvent) return
+  
+  hasUnsavedChanges = true
+  const title = e.target.value
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    updateProjectName(title, e.target)
+  }, 3000)
+})
+
+window.addEventListener('beforeunload', (e) => {
+  if (hasUnsavedChanges) {
+    e.preventDefault()
+    return ''
+  }
+})
 
 // Handle form submission for adding chapters
 document.getElementById('add-chapter-form').addEventListener('click', (e) => {
@@ -151,4 +219,5 @@ document.getElementById('form-trigger').addEventListener('click', (e) => {
 // ========================================
 
 // Load chapters when page loads
+loadProjectName()
 loadChapters()
