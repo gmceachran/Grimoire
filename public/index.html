@@ -3,24 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Table of Contents</title>
+  <meta name="description" content="Grimoire - a simple, browser-based worldbuilding tool for creators." />
+  <title>Grimoire - Table of Contents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>Table of Contents</h1>
-  </header>
+  <div id="main-content">
+    <main class="main">
+      <header>
+        <input 
+          class="page-title-input" 
+          type="text"
+          id="project-title"
+          value="Grimoire" 
+          aria-label="Project Title"
+        />
+        <h2 class="page-title">Table of Contents</h2>
+      </header>
 
-  <main>
-    <section id="chapter-form">
-      <input id="input" type="text" placeholder="Enter chapter title..." />
-      <button id="add-chapter">Add Chapter</button>
-    </section>
-
-    <section id="chapter-list">
-      <ul id="contents-list"></ul>
-    </section>
-  </main>
+      <section class="input-section shared-inner" aria-label="Add new Chapter">
+        <form id="add-chapter-form">
+          <div class="input-group">
+            <label for="input" class="visually-hidden">Chapter Name</label>
+            <input
+              type="text"
+              id="input"
+              name="chapter-name"
+              placeholder="Enter chapter name..."
+              aria-label="Chapter Name"
+              required
+            />
+            <button 
+              type="submit"
+              id="chapter"
+              class="btn"
+              aria-label="Add new chapter"
+            >
+              Add Chapter
+            </button>
+          </div>
+        </form>
+      </section>
+      <section class="contents-section shared-inner" aria-label="Chapter list">
+        <nav aria-label="Table of Contents">
+          <ul id="contents-list"></ul>
+        </nav>
+      </section>
+    </main>
+  </div>
+  
+  <footer class="site-footer">
+    <p>@ 2025 Gabe McEachran. All rights reserved.</p>
+    <p>
+      Built with love. | 
+      <a href="mailto:gabemceachran@gmail.com">Contact</a>
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of use</a>
+    </p>
+  </footer>
 
   <script src="app.js"></script>
 </body>

@@ -18,8 +18,7 @@ async function loadChapters() {
 
       deleteBtn.innerText = 'Delete'
       deleteBtn.id = `delete-${chapter.id}`
-      deleteBtn.style.marginTop = '10px'
-      deleteBtn.style.marginLeft = '10px'
+      deleteBtn.className = 'btn'
 
       li.appendChild(link)
       li.appendChild(deleteBtn)
@@ -70,10 +69,18 @@ async function deleteChapter(id) {
   }
 }
 
-document.getElementById('add-chapter').addEventListener('click', addChapter)
-document.getElementById('input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') addChapter()
+document.getElementById('add-chapter-form').addEventListener('submit', (e) => {
+  e.preventDefault()
+  addChapter()
 })
+
+document.getElementById('input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    addChapter()
+  }
+})
+
 document.getElementById('contents-list').addEventListener('click', (e) => {
   const target = e.target
   if (target.tagName === 'BUTTON') deleteChapter(target.id)
