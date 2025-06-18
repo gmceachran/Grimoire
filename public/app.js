@@ -9,27 +9,7 @@ async function loadChapters() {
     if (!res.ok) throw new Error('Failed to load chapters.') 
 
     const chapters = await res.json()
-    const ul = document.getElementById('contents-list')
-    ul.innerHTML = ''
-
-    // Create list items for each chapter
-    chapters.forEach(chapter => {
-      const li = document.createElement('li')
-      const link = document.createElement('a')
-      const deleteBtn = document.createElement('button')
-    
-      link.href = 'chapter.html'
-      link.innerText = chapter.name
-      link.id = `${chapter.id}-link`
-
-      deleteBtn.innerText = 'Delete'
-      deleteBtn.id = `delete-${chapter.id}`
-      deleteBtn.className = 'btn'
-
-      li.appendChild(link)
-      li.appendChild(deleteBtn)
-      ul.appendChild(li)
-    })
+    renderChapters(chapters)
   } catch (err) {
     alert(err.message)
   }
@@ -57,28 +37,80 @@ async function addChapter() {
     return
   }
 
+  const chapter = await res.json()
   input.value = ''
   
   // Hide the form after successfully adding a chapter
   const dropdown = document.getElementById('add-chapter-form')
   dropdown.classList.add('hidden')
-  
-  await loadChapters()
+
+  addChapterToList(chapter)
 }
 
 // Remove a chapter from the server
 async function deleteChapter(id) {
   try {
-    const chId = id.replace('delete-', '')
-    const res = await fetch(`/api/chapters/${chId}`, {
+    const chapterId = id.replace('delete-', '')
+    const res = await fetch(`/api/chapters/${chapterId}`, {
       method: 'DELETE'
     })
 
     if (!res.ok) throw new Error('Failed to delete chapter')
     
-    loadChapters()
+    deleteChapterFromList(chapterId)
   } catch (err) {
     alert(err.message)
+  }
+}
+
+// ========================================
+// UI UPDATES - from session memory
+// ========================================
+
+let chapters = []
+const ul = document.getElementById('contents-list')
+
+function createChapterListItem(chapter) {
+  const li = document.createElement('li');
+  const link = document.createElement('a');
+  const deleteBtn = document.createElement('button');
+
+  link.href = 'chapter.html';
+  link.innerText = chapter.name;
+  link.id = `${chapter.id}-link`;
+
+  deleteBtn.innerText = 'Delete';
+  deleteBtn.id = `delete-${chapter.id}`;
+  deleteBtn.className = 'btn';
+
+  li.appendChild(link);
+  li.appendChild(deleteBtn);
+
+  return li
+}
+
+function renderChapters(serverChapters) {
+  chapters = serverChapters
+  ul.innerHTML = ''
+
+  chapters.forEach(chapter => {
+    const li = createChapterListItem(chapter)
+    ul.appendChild(li)
+  })
+}
+
+function addChapterToList(chapter) {
+  chapters.push(chapter)
+  const li = createChapterListItem(chapter)
+  ul.appendChild(li)
+}
+
+function deleteChapterFromList(chapterId) {
+  chapters = chapters.filter(ch => ch.id !== chapterId)
+
+  const deleteBtn = document.querySelector(`#delete-${chapterId}`)
+  if (deleteBtn && deleteBtn.parentElement) {
+    deleteBtn.parentElement.remove()
   }
 }
 
@@ -87,7 +119,7 @@ async function deleteChapter(id) {
 // ========================================
 
 // Handle form submission for adding chapters
-document.getElementById('add-chapter-form').addEventListener('submit', (e) => {
+document.getElementById('add-chapter-form').addEventListener('click', (e) => {
   e.preventDefault()
   addChapter()
 })
@@ -109,7 +141,9 @@ document.getElementById('contents-list').addEventListener('click', (e) => {
 // Toggle the add chapter form visibility
 document.getElementById('form-trigger').addEventListener('click', (e) => {
   const dropdown = document.getElementById('add-chapter-form')
+  const input = document.getElementById('input')
   dropdown.classList.toggle('hidden')
+  input.focus()
 })
 
 // ========================================
