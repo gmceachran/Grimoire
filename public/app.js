@@ -1,3 +1,8 @@
+// ========================================
+// API LAYER - Server Communication
+// ========================================
+
+// Fetch and display all chapters from the server
 async function loadChapters() {
   try {
     const res = await fetch('/api/chapters')
@@ -7,6 +12,7 @@ async function loadChapters() {
     const ul = document.getElementById('contents-list')
     ul.innerHTML = ''
 
+    // Create list items for each chapter
     chapters.forEach(chapter => {
       const li = document.createElement('li')
       const link = document.createElement('a')
@@ -29,6 +35,7 @@ async function loadChapters() {
   }
 }
 
+// Create a new chapter and add it to the server
 async function addChapter() {
   const input = document.getElementById('input')
   const name = input.value.trim()
@@ -51,9 +58,15 @@ async function addChapter() {
   }
 
   input.value = ''
-  loadChapters()
+  
+  // Hide the form after successfully adding a chapter
+  const dropdown = document.getElementById('add-chapter-form')
+  dropdown.classList.add('hidden')
+  
+  await loadChapters()
 }
 
+// Remove a chapter from the server
 async function deleteChapter(id) {
   try {
     const chId = id.replace('delete-', '')
@@ -69,11 +82,17 @@ async function deleteChapter(id) {
   }
 }
 
+// ========================================
+// EVENT LISTENERS - User Interactions
+// ========================================
+
+// Handle form submission for adding chapters
 document.getElementById('add-chapter-form').addEventListener('submit', (e) => {
   e.preventDefault()
   addChapter()
 })
 
+// Allow Enter key to submit the form
 document.getElementById('input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault()
@@ -81,9 +100,21 @@ document.getElementById('input').addEventListener('keydown', (e) => {
   }
 })
 
+// Handle delete button clicks on chapter list
 document.getElementById('contents-list').addEventListener('click', (e) => {
   const target = e.target
   if (target.tagName === 'BUTTON') deleteChapter(target.id)
 })
 
+// Toggle the add chapter form visibility
+document.getElementById('form-trigger').addEventListener('click', (e) => {
+  const dropdown = document.getElementById('add-chapter-form')
+  dropdown.classList.toggle('hidden')
+})
+
+// ========================================
+// INITIALIZATION
+// ========================================
+
+// Load chapters when page loads
 loadChapters()

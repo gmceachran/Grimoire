@@ -1,3 +1,6 @@
+/* ========================================
+   GLOBAL RESETS & BASE STYLES
+   ======================================== */
 * {
   margin: 0;
   padding: 0;
@@ -23,6 +26,13 @@ body {
   border: 0;
 }
 
+.hidden {
+  display: none !important;
+}
+
+/* ========================================
+   LAYOUT & STRUCTURE
+   ======================================== */
 #main-content {
   max-width: 800px;
   margin: 2rem auto;
@@ -31,9 +41,21 @@ body {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   position: relative;
-  min-height: calc(100vh-4rem);
+  min-height: calc(100vh - 4rem);
   display: flex;
   flex-direction: column;
+}
+
+.shared-inner {
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+/* ========================================
+   HEADER & TITLE STYLES
+   ======================================== */
+header {
+  margin: 2rem;
 }
 
 .page-title-input {
@@ -48,11 +70,7 @@ body {
   width: 100%;
   max-width: 100%;
   border-bottom: 1px solid transparent;
-  transition: border-color 0.2 ease;
-}
-
-header {
-  margin: 2rem;
+  transition: border-color 0.2s ease;
 }
 
 .page-title {
@@ -67,17 +85,41 @@ h2 {
   border-bottom: 1px solid #8b4513;
 }
 
-.input-section {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background-color: #f9f5f0;
-  border-radius: 4px;
+/* ========================================
+   FORM & INPUT STYLES
+   ======================================== */
+#form-trigger {
+  cursor: pointer;
+  color: #8b4513;
+  text-decoration: none;
+  margin-bottom: 1rem;
+  display: inline-block;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+#form-trigger:hover {
+  color: #6b3410;
 }
 
 .input-group {
   display: flex;
   gap: 1rem;
   align-items: center;
+  margin-top: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 1;
+  max-height: 100px; /* Adjust based on your form height */
+}
+
+/* Hidden state with animation */
+.input-group.hidden {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 #input {
@@ -111,17 +153,15 @@ h2 {
   background-color: #6b3410;
 }
 
-#contents-list button {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-}
-
-#contents-list button:hover {
-  background-color: #c9302c;
-}
-
+/* ========================================
+   CHAPTER LIST STYLES
+   ======================================== */
 .contents-section {
   margin: 2rem 0;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #contents-list {
@@ -129,6 +169,8 @@ h2 {
   margin: 2rem 0;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  padding: 0;
 }
 
 #contents-list li {
@@ -138,7 +180,8 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background-color 0.2 ease;
+  transition: background-color 0.2s ease;
+  width: 100%;
 }
 
 #contents-list li:hover {
@@ -157,11 +200,18 @@ h2 {
   color: #8b4513;
 }
 
-.shared-inner {
-  max-width: 90%;
-  margin: 0 auto;
+#contents-list button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
 }
 
+#contents-list button:hover {
+  background-color: #c9302c;
+}
+
+/* ========================================
+   FOOTER STYLES
+   ======================================== */
 .site-footer {
   font-size: 0.875rem;
   color: #6b332e;
