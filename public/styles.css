@@ -187,25 +187,49 @@ h2 {
   background-color: #f9f5f0;
 }
 
-#contents-list a {
+.chapter-link {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 2rem;
   color: #2c1810;
   text-decoration: none;
   font-size: 1.2rem;
   flex-grow: 1;
+}
+
+.chapter-link:hover {
+  color: #8b4513;
+}
+
+.chapter-num {
+  flex: 0 0 80px; /* adjust to fit */
   text-align: left;
 }
 
-#contents-list a:hover {
-  color: #8b4513;
+.chapter-name {
+  flex-grow: 1;
+  text-align: left;
+}
+
+.chapter-action {
+  flex: 0 0 80px;
+  text-align: right;
 }
 
 #contents-list button {
   padding: 0.5rem 1rem;
+  background-color: #914e2f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   font-size: 0.9rem;
+  transition: background-color 0.2s ease;
 }
 
 #contents-list button:hover {
-  background-color: #c9302c;
+  background-color: #6b3410;
 }
 
 /* ========================================

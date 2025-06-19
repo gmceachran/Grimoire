@@ -50,6 +50,7 @@ function saveData() {
 initializeDataFile()
 loadData()
 
+// Get the project name
 app.get('/api/name', (req, res) => {
   try {
     if (!dataCache.name) {
@@ -62,10 +63,12 @@ app.get('/api/name', (req, res) => {
   }
 })
 
+// Get all chapters
 app.get('/api/chapters', (req, res) => {
   res.json(dataCache.chapters)
 })
 
+// Update the project name
 app.post('/api/name', (req, res) => {
   const { name } = req.body
 
@@ -78,22 +81,15 @@ app.post('/api/name', (req, res) => {
   res.status(200).json({ success: true })
 })
 
+// Create a new chapter
 app.post('/api/chapters', (req, res) => {
   const { name } = req.body
-
-  if (!name || typeof name !== 'string') {
-    return res.status(400).json({ error: 'Invalid chapter name.' })
-  }
-
-  const exists = dataCache.chapters.some((ch) => ch.name === name)
-  if (exists) {
-    return res.status(409).json({ error: 'Chapter already exists.' })
-  }
 
   const newChapter = {
     id: `ch${Date.now()}`,
     name,
-    slug: name.toLowerCase().replace(/\s+/g, '-')
+    slug: name.toLowerCase().replace(/\s+/g, '-'),
+    number: `Chapter ${dataCache.chapters.length + 1}`
   }
 
   dataCache.chapters.push(newChapter)
@@ -101,6 +97,7 @@ app.post('/api/chapters', (req, res) => {
   res.status(201).json(newChapter)
 })
 
+// Delete a chapter by ID
 app.delete('/api/chapters/:id', (req, res) => {
   const id = req.params.id
 
