@@ -86,7 +86,7 @@ app.post('/api/chapters', (req, res) => {
   const { name } = req.body
 
   const newChapter = {
-    id: `ch${Date.now()}`,
+    id: Date.now(),
     name,
     slug: name.toLowerCase().replace(/\s+/g, '-'),
     number: `Chapter ${dataCache.chapters.length + 1}`
@@ -99,7 +99,8 @@ app.post('/api/chapters', (req, res) => {
 
 // Delete a chapter by ID
 app.delete('/api/chapters/:id', (req, res) => {
-  const id = req.params.id
+  const id = parseInt(req.params.id)
+  console.log('Deleting chapter with ID:', id)
 
   const chapterIndex = dataCache.chapters.findIndex(ch => ch.id === id)
   if (chapterIndex === -1) {
@@ -107,6 +108,11 @@ app.delete('/api/chapters/:id', (req, res) => {
   }
 
   dataCache.chapters.splice(chapterIndex, 1)
+
+  dataCache.chapters.forEach((chapter, index) => {
+    chapter.number = `Chapter ${index + 1}`
+  })
+
   saveData()
   res.status(200).json({ success: true })
 })

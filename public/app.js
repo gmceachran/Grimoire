@@ -107,6 +107,7 @@ const ul = document.getElementById('contents-list')
 
 function createChapterListItem(chapter) {
   const li = document.createElement('li')
+  li.id = `chapter-${chapter.id}`
   
   const link = document.createElement('a')
   link.href = 'chapter.html'
@@ -160,13 +161,25 @@ function addChapterToList(chapter) {
 }
 
 function deleteChapterFromList(chapterId) {
-  chapters = chapters.filter(ch => ch.id !== chapterId)
+  const numericChapterId = parseInt(chapterId)
+  
+  chapters = chapters.filter(ch => ch.id !== numericChapterId)
 
   const deleteBtn = document.querySelector(`#delete-${chapterId}`)
   if (deleteBtn && deleteBtn.parentElement) {
     deleteBtn.parentElement.remove()
   }
-}
+
+  // Renumber remaining chapters and update DOM
+  chapters.forEach((chapter, index) => {
+    chapter.number = `Chapter ${index + 1}`
+    
+    // Update the chapter number in the DOM using getElementById
+    const chapterElement = document.getElementById(`chapter-${chapter.id}`)
+    const numberSpan = chapterElement.querySelector('.chapter-num')
+    numberSpan.textContent = chapter.number
+  })
+ }
 
 // ========================================
 // EVENT LISTENERS - User Interactions
