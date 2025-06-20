@@ -207,7 +207,7 @@ window.addEventListener('beforeunload', (e) => {
 })
 
 // Handle form submission for adding chapters
-document.getElementById('add-chapter-form').addEventListener('click', (e) => {
+document.getElementById('add-chapter').addEventListener('click', (e) => {
   e.preventDefault()
   addChapter()
 })
