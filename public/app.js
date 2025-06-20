@@ -58,11 +58,6 @@ async function addChapter() {
   const input = document.getElementById('input')
   const name = input.value.trim()
 
-  if (!name) {
-    alert('Please enter a valid name.')
-    return
-  }
-
   const res = await fetch('/api/chapters', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -111,23 +106,36 @@ let suppressInputEvent = false
 const ul = document.getElementById('contents-list')
 
 function createChapterListItem(chapter) {
-  const li = document.createElement('li');
-  const link = document.createElement('a');
-  const deleteBtn = document.createElement('button');
+  const li = document.createElement('li')
+  li.id = `chapter-${chapter.id}`
+  
+  const link = document.createElement('a')
+  link.href = 'chapter.html'
+  link.id = `${chapter.id}-link`
+  link.className = 'chapter-link'
 
-  link.href = 'chapter.html';
-  link.innerText = chapter.name;
-  link.id = `${chapter.id}-link`;
+  const chapterNum = document.createElement('span')
+  chapterNum.className = 'chapter-num'
+  chapterNum.innerText = chapter.number
 
-  deleteBtn.innerText = 'Delete';
-  deleteBtn.id = `delete-${chapter.id}`;
-  deleteBtn.className = 'btn';
+  const chapterName = document.createElement('span')
+  chapterName.className = 'chapter-name'
+  chapterName.innerText = chapter.name
 
-  li.appendChild(link);
-  li.appendChild(deleteBtn);
+  link.appendChild(chapterNum)
+  link.appendChild(chapterName)
+
+  const deleteBtn = document.createElement('button')
+  deleteBtn.innerText = 'Delete'
+  deleteBtn.id = `delete-${chapter.id}`
+  deleteBtn.className = 'btn'
+
+  li.appendChild(link)
+  li.appendChild(deleteBtn)
 
   return li
 }
+
 
 function renderChapters(serverChapters) {
   chapters = serverChapters
@@ -153,13 +161,25 @@ function addChapterToList(chapter) {
 }
 
 function deleteChapterFromList(chapterId) {
-  chapters = chapters.filter(ch => ch.id !== chapterId)
+  const numericChapterId = parseInt(chapterId)
+  
+  chapters = chapters.filter(ch => ch.id !== numericChapterId)
 
   const deleteBtn = document.querySelector(`#delete-${chapterId}`)
   if (deleteBtn && deleteBtn.parentElement) {
     deleteBtn.parentElement.remove()
   }
-}
+
+  // Renumber remaining chapters and update DOM
+  chapters.forEach((chapter, index) => {
+    chapter.number = `Chapter ${index + 1}`
+    
+    // Update the chapter number in the DOM using getElementById
+    const chapterElement = document.getElementById(`chapter-${chapter.id}`)
+    const numberSpan = chapterElement.querySelector('.chapter-num')
+    numberSpan.textContent = chapter.number
+  })
+ }
 
 // ========================================
 // EVENT LISTENERS - User Interactions
