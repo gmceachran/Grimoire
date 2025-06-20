@@ -83,7 +83,7 @@ async function addChapter() {
 // Remove a chapter from the server
 async function deleteChapter(id) {
   try {
-    const chapterId = id.replace('delete-', '')
+    const chapterId = id.replace('chapter-', '')
     const res = await fetch(`/api/chapters/${chapterId}`, {
       method: 'DELETE'
     })
@@ -105,6 +105,7 @@ let hasUnsavedChanges = false
 let suppressInputEvent = false
 const ul = document.getElementById('contents-list')
 
+// Create a list item element for a chapter
 function createChapterListItem(chapter) {
   const li = document.createElement('li')
   li.id = `chapter-${chapter.id}`
@@ -125,18 +126,34 @@ function createChapterListItem(chapter) {
   link.appendChild(chapterNum)
   link.appendChild(chapterName)
 
-  const deleteBtn = document.createElement('button')
-  deleteBtn.innerText = 'Delete'
-  deleteBtn.id = `delete-${chapter.id}`
-  deleteBtn.className = 'btn'
-
   li.appendChild(link)
-  li.appendChild(deleteBtn)
 
   return li
 }
 
+// Create a context menu for chapter options
+function createContextMenu(listId, x, y) {
+  const id = listId.replace('chapter-', '')
 
+  const menu = document.createElement('div')
+  const deleteBtn = document.createElement('button')
+
+  menu.setAttribute('role', 'menu')
+  menu.setAttribute('aria-label', 'Chapter options menu')
+  menu.className = 'context-menu'
+
+  deleteBtn.innerText = 'Delete Chapter'
+  deleteBtn.id = `delete ${id}`
+  menu.appendChild(deleteBtn)
+
+  menu.style.position = 'fixed'
+  menu.style.left = `${x}px`
+  menu.style.top = `${y}px`
+
+  return menu
+}
+
+// Render all chapters in the list
 function renderChapters(serverChapters) {
   chapters = serverChapters
   ul.innerHTML = ''
@@ -147,6 +164,7 @@ function renderChapters(serverChapters) {
   })
 }
 
+// Render the project name in the title input
 function renderName(name) {
   const input = document.getElementById('project-title')
   suppressInputEvent = true
@@ -154,12 +172,14 @@ function renderName(name) {
   suppressInputEvent = false
 }
 
+// Add a new chapter to the list
 function addChapterToList(chapter) {
   chapters.push(chapter)
   const li = createChapterListItem(chapter)
   ul.appendChild(li)
 }
 
+// Remove a chapter from the list and renumber remaining chapters
 function deleteChapterFromList(chapterId) {
   const numericChapterId = parseInt(chapterId)
   
@@ -170,16 +190,19 @@ function deleteChapterFromList(chapterId) {
     deleteBtn.parentElement.remove()
   }
 
-  // Renumber remaining chapters and update DOM
   chapters.forEach((chapter, index) => {
     chapter.number = `Chapter ${index + 1}`
-    
-    // Update the chapter number in the DOM using getElementById
+ 
     const chapterElement = document.getElementById(`chapter-${chapter.id}`)
     const numberSpan = chapterElement.querySelector('.chapter-num')
     numberSpan.textContent = chapter.number
   })
- }
+}
+
+function clearContextMenu() {
+  const existingMenus = document.querySelectorAll('.context-menu')
+  existingMenus.forEach(menu => menu.remove())
+}
 
 // ========================================
 // EVENT LISTENERS - User Interactions
@@ -221,9 +244,21 @@ document.getElementById('input').addEventListener('keydown', (e) => {
 })
 
 // Handle delete button clicks on chapter list
-document.getElementById('contents-list').addEventListener('click', (e) => {
-  const target = e.target
-  if (target.tagName === 'BUTTON') deleteChapter(target.id)
+document.getElementById('contents-list').addEventListener('contextmenu', (e) => {
+  clearContextMenu()
+  const target = e.target.closest('li')
+  if (!target) return
+
+  e.preventDefault()
+  const menu = createContextMenu(target.id, e.clientX, e.clientY)
+  document.body.appendChild(menu)
+})
+
+// Close context menu when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.context-menu')) {
+    clearContextMenu()
+  }
 })
 
 // Toggle the add chapter form visibility

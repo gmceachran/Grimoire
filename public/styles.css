@@ -233,6 +233,35 @@ h2 {
 }
 
 /* ========================================
+   CONTEXT MENU STYLES
+   ======================================== */
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-width: 160px;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.context-menu button:hover {
+  background-color: #f0f0f0
+}
+
+/* ========================================
    FOOTER STYLES
    ======================================== */
 .site-footer {
