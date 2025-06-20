@@ -22,11 +22,6 @@ function initializeDataFile() {
       const templateData = fs.readFileSync(TEMPLATE_FILE, 'utf-8')
       fs.writeFileSync(DATA_FILE, templateData)
       console.log('Created data file from template:', DATA_FILE)
-    } else {
-      // Create with default structure
-      const initialData = { chapters: [] }
-      fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2))
-      console.log('Created initial data file:', DATA_FILE)
     }
   }
 }
@@ -100,7 +95,6 @@ app.post('/api/chapters', (req, res) => {
 // Delete a chapter by ID
 app.delete('/api/chapters/:id', (req, res) => {
   const id = parseInt(req.params.id)
-  console.log('Deleting chapter with ID:', id)
 
   const chapterIndex = dataCache.chapters.findIndex(ch => ch.id === id)
   if (chapterIndex === -1) {
