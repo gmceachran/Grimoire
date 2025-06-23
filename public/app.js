@@ -17,7 +17,7 @@ async function loadChapters() {
 
 async function loadProjectName() {
   try {
-    const res = await fetch('/api/name')
+    const res = await fetch('/api/projects/name')
     if (!res.ok) throw new Error('Failed to load Project Name')
     
     const name = await res.json()
@@ -34,7 +34,7 @@ async function updateProjectName(title, inputElement) {
     return
   }
 
-  const res = await fetch('/api/name', {
+  const res = await fetch('/api/projects/name', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name })
@@ -333,9 +333,9 @@ document.addEventListener('click', (e) => {
 
   if (target.className.includes('delete')) {
     deleteChapter(target.id)
-    modal.parentElement.remove() // Remove the background (which contains the modal)
+    modal.parentElement.remove() 
   } else if (target.className.includes('cancel')) {
-    modal.parentElement.remove() // Remove the background (which contains the modal)
+    modal.parentElement.remove() 
   }
 })
 
