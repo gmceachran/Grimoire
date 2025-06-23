@@ -83,7 +83,7 @@ async function addChapter() {
 // Remove a chapter from the server
 async function deleteChapter(id) {
   try {
-    const chapterId = id.replace('chapter-', '')
+    const chapterId = id.replace('delete-', '')
     const res = await fetch(`/api/chapters/${chapterId}`, {
       method: 'DELETE'
     })
@@ -143,7 +143,7 @@ function createContextMenu(listId, x, y) {
   menu.className = 'context-menu'
 
   deleteBtn.innerText = 'Delete Chapter'
-  deleteBtn.id = `delete ${id}`
+  deleteBtn.id = `delete-${id}`
   menu.appendChild(deleteBtn)
 
   menu.style.position = 'fixed'
@@ -151,6 +151,47 @@ function createContextMenu(listId, x, y) {
   menu.style.top = `${y}px`
 
   return menu
+}
+
+function createConfirmationModal(deleteId) {
+  const background = document.createElement('div')
+  background.className = 'background'
+
+  const modal = document.createElement('div')
+  modal.className = 'confirmation-modal'
+  modal.id = 'confirmation-modal'
+
+  const confirmDialogue = document.createElement('span')
+  confirmDialogue.className = 'confirm-dialogue'
+  confirmDialogue.innerText = 'Are you sure you want to delete this chapter?'
+
+  const btnSection = document.createElement('span')
+
+  const deleteBtn = document.createElement('button')
+  deleteBtn.className = 'delete confirmation-button'
+  deleteBtn.innerText = 'Delete'
+  deleteBtn.id = deleteId
+
+  const cancelBtn = document.createElement('button')
+  cancelBtn.className = 'cancel confirmation-button'
+  cancelBtn.innerText = 'Cancel'
+
+  btnSection.appendChild(cancelBtn)
+  btnSection.appendChild(deleteBtn)
+
+  modal.appendChild(confirmDialogue)
+  modal.appendChild(btnSection)
+
+  modal.style.position = 'fixed'
+  modal.style.left = '50%'
+  modal.style.top = '50%'
+  modal.style.transform = 'translate(-50%, -50%)'
+
+  // Add the background to the DOM and put modal inside it
+  document.body.appendChild(background)
+  background.appendChild(modal)
+
+  return background
 }
 
 // Render all chapters in the list
@@ -182,13 +223,11 @@ function addChapterToList(chapter) {
 // Remove a chapter from the list and renumber remaining chapters
 function deleteChapterFromList(chapterId) {
   const numericChapterId = parseInt(chapterId)
-  
   chapters = chapters.filter(ch => ch.id !== numericChapterId)
 
-  const deleteBtn = document.querySelector(`#delete-${chapterId}`)
-  if (deleteBtn && deleteBtn.parentElement) {
-    deleteBtn.parentElement.remove()
-  }
+  const deprecatedChapter = document.getElementById(`chapter-${chapterId}`)
+  if (deprecatedChapter) deprecatedChapter.remove()
+  
 
   chapters.forEach((chapter, index) => {
     chapter.number = `Chapter ${index + 1}`
@@ -243,7 +282,7 @@ document.getElementById('input').addEventListener('keydown', (e) => {
   }
 })
 
-// Handle delete button clicks on chapter list
+// Handle delete context menu for li
 document.getElementById('contents-list').addEventListener('contextmenu', (e) => {
   clearContextMenu()
   const target = e.target.closest('li')
@@ -253,11 +292,50 @@ document.getElementById('contents-list').addEventListener('contextmenu', (e) => 
   const menu = createContextMenu(target.id, e.clientX, e.clientY)
   document.body.appendChild(menu)
 })
-
-// Close context menu when clicking outside
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.context-menu')) {
     clearContextMenu()
+  }
+})
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    clearContextMenu()
+  }
+})
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    clearContextMenu()
+  }
+})
+document.addEventListener('scroll', (e) => {
+  clearContextMenu()
+})
+
+// Context Menu Delete Button
+document.addEventListener('click', (e) => {
+  const contextMenu = e.target.closest('.context-menu')
+  if (!contextMenu) return
+
+  const target = e.target.closest('button')
+  if (!target) return
+
+  const background = createConfirmationModal(target.id)
+  clearContextMenu()
+})
+
+// Handle cancel and delete modal buttons
+document.addEventListener('click', (e) => {
+  const modal = e.target.closest('#confirmation-modal')
+  if (!modal) return
+
+  const target = e.target.closest('button')
+  if (!target) return
+
+  if (target.className.includes('delete')) {
+    deleteChapter(target.id)
+    modal.parentElement.remove() // Remove the background (which contains the modal)
+  } else if (target.className.includes('cancel')) {
+    modal.parentElement.remove() // Remove the background (which contains the modal)
   }
 })
 
