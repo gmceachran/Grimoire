@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
-const DATA_FILE = path.join(__dirname, '../grimoire-data.json');
+const DATA_FILE = path.join(__dirname, '../data/grimoire-data.json');
 
 // Data cache
 let dataCache = null;

@@ -15,6 +15,7 @@ async function loadChapters() {
   }
 }
 
+// Fetch and display project name from the server
 async function loadProjectName() {
   try {
     const res = await fetch('/api/projects/name')
@@ -27,6 +28,7 @@ async function loadProjectName() {
   }
 }
 
+// Update project name and send to server
 async function updateProjectName(title, inputElement) {
   const name = title.trim()
   if (!name) {
@@ -111,7 +113,7 @@ function createChapterListItem(chapter) {
   li.id = `chapter-${chapter.id}`
   
   const link = document.createElement('a')
-  link.href = 'chapter.html'
+  link.href = `chapters/chapter.html?id=${chapter.id}`
   link.id = `${chapter.id}-link`
   link.className = 'chapter-link'
 

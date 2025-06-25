@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const router = express.Router();
 
-const DATA_FILE = path.join(__dirname, '../grimoire-data.json');
+const DATA_FILE = path.join(__dirname, '../data/grimoire-data.json');
 
 // Data cache
 let dataCache = null;
@@ -31,6 +31,12 @@ router.get('/', (req, res) => {
   res.json(dataCache.chapters);
 });
 
+// Get chapter data
+// router.get('/:id', (req, res) => {
+
+// })
+
+
 // Create a new chapter
 router.post('/', (req, res) => {
   const { name } = req.body;
@@ -41,6 +47,16 @@ router.post('/', (req, res) => {
     slug: name.toLowerCase().replace(/\s+/g, '-'),
     number: `Chapter ${dataCache.chapters.length + 1}`
   };
+
+  const chaptersDir = path.join(__dirname, '../data/chapters')
+  const CHAPTER_DATA = path.join(chaptersDir, `${newChapter.id}.txt`)
+  
+  // Create chapters directory if it doesn't exist
+  if (!fs.existsSync(chaptersDir)) {
+    fs.mkdirSync(chaptersDir, { recursive: true })
+  }
+  
+  fs.writeFileSync(CHAPTER_DATA, '')
 
   dataCache.chapters.push(newChapter);
   saveData();
@@ -54,6 +70,15 @@ router.delete('/:id', (req, res) => {
   const chapterIndex = dataCache.chapters.findIndex(ch => ch.id === id);
   if (chapterIndex === -1) {
     return res.status(404).json({ error: 'Chapter not found' });
+  }
+
+  const chapterToDelete = dataCache.chapters[chapterIndex];
+  const chaptersDir = path.join(__dirname, '../data/chapters');
+  const chapterFilePath = path.join(chaptersDir, `${chapterToDelete.id}.txt`);
+
+  // Delete the chapter file if it exists
+  if (fs.existsSync(chapterFilePath)) {
+    fs.unlinkSync(chapterFilePath);
   }
 
   dataCache.chapters.splice(chapterIndex, 1);

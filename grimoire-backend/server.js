@@ -8,8 +8,8 @@ const PORT = 3000
 app.use(express.static(path.join(__dirname, '../public')))
 app.use(express.json())
 
-const DATA_FILE = path.join(__dirname, 'grimoire-data.json')
-const TEMPLATE_FILE = path.join(__dirname, 'grimoire-data.template.json')
+const DATA_FILE = path.join(__dirname, 'data/grimoire-data.json')
+const TEMPLATE_FILE = path.join(__dirname, 'data/grimoire-data.template.json')
 
 // Initialize data file from template if it doesn't exist
 function initializeDataFile() {
