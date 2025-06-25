@@ -15,9 +15,10 @@ async function loadChapters() {
   }
 }
 
+// Fetch and display project name from the server
 async function loadProjectName() {
   try {
-    const res = await fetch('/api/name')
+    const res = await fetch('/api/projects/name')
     if (!res.ok) throw new Error('Failed to load Project Name')
     
     const name = await res.json()
@@ -27,6 +28,7 @@ async function loadProjectName() {
   }
 }
 
+// Update project name and send to server
 async function updateProjectName(title, inputElement) {
   const name = title.trim()
   if (!name) {
@@ -34,7 +36,7 @@ async function updateProjectName(title, inputElement) {
     return
   }
 
-  const res = await fetch('/api/name', {
+  const res = await fetch('/api/projects/name', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name })
@@ -111,7 +113,7 @@ function createChapterListItem(chapter) {
   li.id = `chapter-${chapter.id}`
   
   const link = document.createElement('a')
-  link.href = 'chapter.html'
+  link.href = `chapters/chapter.html?id=${chapter.id}`
   link.id = `${chapter.id}-link`
   link.className = 'chapter-link'
 
@@ -333,9 +335,9 @@ document.addEventListener('click', (e) => {
 
   if (target.className.includes('delete')) {
     deleteChapter(target.id)
-    modal.parentElement.remove() // Remove the background (which contains the modal)
+    modal.parentElement.remove() 
   } else if (target.className.includes('cancel')) {
-    modal.parentElement.remove() // Remove the background (which contains the modal)
+    modal.parentElement.remove() 
   }
 })
 
