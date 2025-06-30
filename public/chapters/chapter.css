@@ -1,0 +1,92 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Crimson Text', Georgia, serif;
+  line-height: 1.6;
+  background-color: #f4f1ea;
+  color: #6b332e;
+  min-height: 100vh;
+}
+
+.main {
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.page {
+  width: 35%;
+  margin: 2rem auto;
+  padding: 3rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0.1);
+  border-radius: 2px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.left {
+  margin-right: 1rem;
+}
+
+.right {
+  margin-left: 1rem;
+}
+
+.header {
+  display: grid;
+  align-items: center;
+}
+
+.left-page {
+  grid-template-columns: auto 1fr;
+}
+
+.right-page {
+  grid-template-columns: 1fr auto;
+}
+
+.title {
+  text-align: center;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.left-number {
+  text-align: left;
+}
+
+.right-number {
+  text-align: right;
+}
+
+.page-number {
+  text-align: right;
+}
+
+.text-area {
+  width: 90%;
+  height: 100%;
+  margin: auto;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: justify;
+  overflow: hidden;
+}
+.site-footer {
+  font-size: 0.875rem;
+  color: #6b332e;
+  background-color: #f4f1ea;
+  padding: 2rem 1rem;
+  text-align: center;
+  border-top: 1px solid #e0d6c2;
+  margin-top: auto;
+}

@@ -31,12 +31,6 @@ router.get('/', (req, res) => {
   res.json(dataCache.chapters);
 });
 
-// Get chapter data
-// router.get('/:id', (req, res) => {
-
-// })
-
-
 // Create a new chapter
 router.post('/', (req, res) => {
   const { name } = req.body;

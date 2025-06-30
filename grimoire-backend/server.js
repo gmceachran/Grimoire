@@ -29,9 +29,11 @@ initializeDataFile()
 // Import and use route files
 const chaptersRoutes = require('./routes/chapters')
 const projectsRoutes = require('./routes/projects')
+const bodyRoutes = require('./routes/chapter-body')
 
 app.use('/api/chapters', chaptersRoutes)
 app.use('/api/projects', projectsRoutes)
+app.use('api/chapter-body', bodyRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`)
