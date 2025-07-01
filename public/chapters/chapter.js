@@ -4,16 +4,15 @@
 
 // fetch chapter data from server
 async function loadChapterData() {
-  const urlParams = new URLSearchParam(window.location.search)
+  const urlParams = new URLSearchParams(window.location.search)
   const chapterId = urlParams.get('id')
 
-  const [resChapter, resBody] = await Promise.all([
-    fetch('/api/chapters'),
-    fetch(`/api/chapter-body/${chapterId}`)
-  ])
-  const chapter = await resBody.json()
+  const res = await fetch(`/api/chapter-body/${chapterId}`)
 
-  renderChapterData(chapter)
+  const chatperData = await res.json()
+  const chapterText = chatperData.body
+  
+  renderChapterData(chapterText)
 }
 
 // ========================================
@@ -25,6 +24,8 @@ let chapterText
 // return once page right to left flow is handled. 
 // This might be a good place to end this branch. or at least commit.
 function renderChapterData(chapter) {
-  chapterText = chapter
-  document.getElementById
+  const textArea = document.getElementById('text-1')
+  textArea.value = chapter
 }
+
+loadChapterData()

@@ -15,11 +15,15 @@ router.get('/:id', (req, res) => {
     if (!id || isNaN(id)) {
       return res.status(400).json({ error: 'Invalid Chapter ID' })
     }
-    const chapterData = path.join(__dirname, `/data/chapters/${id}.txt`)
+
+    const rootPath = path.join(__dirname, '..')
+    const chapterData = path.join(rootPath, `data/chapters/${id}.txt`)
+
     dataCache = {
       id: id,
       body: fs.readFileSync(chapterData, 'utf-8')
     }
+    
     res.json(dataCache)
   } catch (error) {
     console.error('Error loading data.', error)
@@ -27,5 +31,7 @@ router.get('/:id', (req, res) => {
     res.status(500).json({ error: 'Error loading data' })
   }
 })
+
+module.exports = router
 
 
