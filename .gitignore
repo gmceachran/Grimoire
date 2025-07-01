@@ -1,5 +1,6 @@
 # Data files (actual data not tracked, template is tracked)
 grimoire-data.json
+grimoire-backend/data/chapters/
 
 # Dependencies
 node_modules/
