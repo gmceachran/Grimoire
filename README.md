@@ -1,44 +1,82 @@
-# GRIMOIRE
+# 🌙 GRIMOIRE
 
-A large long-term React + PostgreSQL project.
+Grimoire is a simple, browser-based worldbuilding tool for creators. Build and link lore entries, create interactive maps with pins, and design timelines to visualize events in your fictional worlds—all in one place.
 
-## Project Structure
+## 🚀 Features (Planned for MVP)
 
-```
-grimoire/
-├── frontend/          # React frontend application
-├── backend/           # Node.js/Express backend API
-├── shared/            # Shared types and utilities
-└── docs/              # Project documentation
-```
+- 📚 Create and edit encyclopedia entries (characters, places, objects, etc.)
+- 🗺️ Upload maps, place pins, and link them to entries
+- 🕰️ Build timelines of events and link them to entries and maps
+- 💾 Save and load data via localStorage (future: export/import)
 
-## Getting Started
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: PostgreSQL
+- **Development**: Hot reload, TypeScript compilation, ESLint
+- **Architecture**: Full-stack monorepo with workspaces
+
+## 📦 Installation & Usage
 
 ### Prerequisites
 
 - Node.js (v18 or higher)
 - PostgreSQL (v13 or higher)
-- npm or yarn
+- npm
 
 ### Installation
 
-1. Install all dependencies:
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/grimoire.git
+   cd grimoire
+   ```
+
+2. Install all dependencies:
    ```bash
    npm run install:all
    ```
 
-2. Set up environment variables:
-   - Copy `.env.example` to `.env` in both frontend and backend directories
-   - Configure your database connection and other environment variables
+3. Set up environment variables:
+   - Copy `backend/env.example` to `backend/.env`
+   - Configure your database connection
 
-3. Start the development servers:
+4. Start the development servers:
    ```bash
    npm run dev
    ```
 
-This will start both the frontend (usually on http://localhost:5173) and backend (usually on http://localhost:3001) concurrently.
+This will start both the frontend (http://localhost:5173) and backend (http://localhost:8000) concurrently.
 
-## Available Scripts
+## 🏗️ Project Structure
+
+```
+grimoire/
+├── frontend/          # React frontend application
+│   ├── src/
+│   │   ├── components/    # Reusable UI components
+│   │   ├── pages/         # Page components
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── services/      # API service functions
+│   │   ├── types/         # TypeScript type definitions
+│   │   └── utils/         # Utility functions
+│   └── public/            # Static assets
+├── backend/           # Node.js/Express backend API
+│   ├── src/
+│   │   ├── controllers/   # Route controllers
+│   │   ├── middleware/    # Custom middleware
+│   │   ├── routes/        # API routes
+│   │   ├── services/      # Business logic
+│   │   ├── types/         # TypeScript type definitions
+│   │   ├── utils/         # Utility functions
+│   │   └── config/        # Configuration files
+│   └── dist/              # Compiled JavaScript
+├── shared/            # Shared types and utilities
+└── docs/              # Project documentation
+```
+
+## 🚀 Available Scripts
 
 - `npm run dev` - Start both frontend and backend in development mode
 - `npm run dev:frontend` - Start only the frontend
@@ -47,10 +85,16 @@ This will start both the frontend (usually on http://localhost:5173) and backend
 - `npm run install:all` - Install dependencies for all workspaces
 - `npm run clean` - Clean all node_modules and build directories
 
-## Technology Stack
+## 🌱 Roadmap (Future Features)
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Backend**: Node.js, Express, TypeScript
-- **Database**: PostgreSQL
-- **Styling**: CSS Modules or styled-components (TBD)
-- **State Management**: React Context or Redux Toolkit (TBD)
+- AI assistant for generating entries and highlighting inconsistencies
+- Book-like interface with page-turn animations
+- Version control for entries (commit history and revert system)
+- PDF/HTML export functionality
+- Real-time collaboration
+- Advanced search and filtering
+- Custom themes and layouts
+
+## 🌌 License
+
+This project is licensed under the MIT License.
