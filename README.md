@@ -40,9 +40,15 @@ Grimoire is a simple, browser-based worldbuilding tool for creators. Build and l
 
 3. Set up environment variables:
    - Copy `backend/env.example` to `backend/.env`
-   - Configure your database connection
+   - Configure your database connection (Prisma uses DATABASE_URL)
 
-4. Start the development servers:
+4. Set up the database:
+   ```bash
+   cd backend
+   npx prisma db push
+   ```
+
+5. Start the development servers:
    ```bash
    npm run dev
    ```
