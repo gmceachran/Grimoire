@@ -57,9 +57,22 @@
 │ ip_address      │
 │ device_label    │
 └─────────────────┘
+         │
+         │ 1:N
+         ▼
+┌─────────────────┐
+│VERIFICATION_TOKEN│
+│ ─────────────── │
+│ id (PK)         │
+│ user_id (FK)    │
+│ token (unique)  │
+│ purpose         │
+│ expires_at      │
+│ consumed_at     │
+│ created_at      │
+└─────────────────┘
 
-USER ──1:N──► ROLE (via USER_ROLE junction)
-USER ──1:N──► VERIFICATION_TOKEN
+USER ──M:N──► ROLE (via USER_ROLE junction)
 USER ──1:N──► LIBRARY
 USER ──1:N──► MAP
 USER ──1:N──► TIMELINE
@@ -210,6 +223,30 @@ USER ──1:N──► TIMELINE
 └─────────────────┘
 ```
 
+## Authentication Schema Details
+
+### User Status Enum
+- **PENDING**: User registered but email not verified
+- **VERIFIED**: User has verified their email address
+- **SUSPENDED**: User account temporarily disabled
+- **DELETED**: User account permanently disabled
+
+### Token Purpose Enum
+- **EMAIL_VERIFICATION**: Token for email address verification
+- **PASSWORD_RESET**: Token for password reset requests
+
+### Session Management
+- **Token Hashing**: Session tokens are hashed (SHA-256) before storage
+- **Expiration**: Configurable session expiration (default: 7 days)
+- **Metadata Tracking**: User agent, IP address, and device labeling
+- **Revocation**: Sessions can be individually or bulk revoked
+
+### Security Features
+- **Password Hashing**: Argon2id with configurable parameters
+- **Email Normalization**: All emails stored in lowercase, trimmed
+- **Token Security**: Cryptographically secure random tokens (32 bytes)
+- **One-time Use**: Verification and reset tokens are consumed after use
+
 ## Key Relationships
 
 ### Required Hierarchy
@@ -224,6 +261,7 @@ USER ──1:N──► TIMELINE
 - **TimelineEvents** belong to Timelines
 
 ### Authentication
-- **Sessions** track user logins
-- **Roles** define user permissions (USER, ADMIN)
-- **VerificationTokens** handle email verification and password resets
+- **Sessions** track user logins with metadata (user agent, IP, device)
+- **Roles** define user permissions (USER, ADMIN) via many-to-many relationship
+- **VerificationTokens** handle email verification and password resets with expiration
+- **Users** have status tracking (PENDING, VERIFIED, SUSPENDED, DELETED)
