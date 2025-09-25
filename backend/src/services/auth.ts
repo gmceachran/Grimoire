@@ -131,7 +131,7 @@ export class AuthService {
     return {
       userId: user.id,
       email: user.email,
-      displayName: user.display_name,
+      displayName: user.display_name || '',
     };
   }
 
