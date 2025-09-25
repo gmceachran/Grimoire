@@ -64,6 +64,8 @@ app.get('/api', (req, res) => {
       'auth-me': '/auth/me',
       'auth-verify-request': '/auth/verify/request',
       'auth-verify-confirm': '/auth/verify/confirm',
+      'auth-password-reset-request': '/auth/password/reset/request',
+      'auth-password-reset-confirm': '/auth/password/reset/confirm',
       api: '/api'
     }
   });

@@ -25,6 +25,15 @@ const emailVerificationConfirmSchema = z.object({
   token: z.string().min(1),
 });
 
+const passwordResetRequestSchema = z.object({
+  email: z.string().email().toLowerCase().trim(),
+});
+
+const passwordResetConfirmSchema = z.object({
+  token: z.string().min(1),
+  newPassword: z.string().min(8).max(128),
+});
+
 // POST /auth/register
 router.post('/register', async (req, res) => {
   try {
@@ -278,6 +287,82 @@ router.post('/verify/confirm', async (req, res) => {
     }
     
     console.error('Email verification confirm error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+    return;
+  }
+});
+
+// POST /auth/password/reset/request
+router.post('/password/reset/request', async (req, res) => {
+  try {
+    const { email } = passwordResetRequestSchema.parse(req.body);
+    
+    await AuthService.requestPasswordReset(email);
+    
+    // Always return success to prevent email enumeration
+    res.json({
+      success: true,
+      message: 'If the email exists, a password reset link has been sent',
+    });
+    return;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email address',
+        errors: error.issues,
+      });
+    }
+    
+    console.error('Password reset request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+    return;
+  }
+});
+
+// POST /auth/password/reset/confirm
+router.post('/password/reset/confirm', async (req, res) => {
+  try {
+    const { token, newPassword } = passwordResetConfirmSchema.parse(req.body);
+    
+    await AuthService.resetPassword(token, newPassword);
+    
+    res.json({
+      success: true,
+      message: 'Password reset successfully',
+    });
+    return;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid input',
+        errors: error.issues,
+      });
+    }
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Invalid token')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or expired reset token',
+        });
+      }
+      if (error.message.includes('Password must contain')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+        });
+      }
+    }
+    
+    console.error('Password reset confirm error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
