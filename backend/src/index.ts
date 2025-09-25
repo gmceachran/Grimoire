@@ -3,8 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { testConnection } from './config/database';
+import authRoutes from './routes/auth';
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +38,9 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Cookie parsing middleware
+app.use(cookieParser());
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -52,10 +57,14 @@ app.get('/api', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
+      auth: '/auth',
       api: '/api'
     }
   });
 });
+
+// Auth routes
+app.use('/auth', authRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
