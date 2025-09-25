@@ -58,6 +58,12 @@ app.get('/api', (req, res) => {
     endpoints: {
       health: '/health',
       auth: '/auth',
+      'auth-register': '/auth/register',
+      'auth-login': '/auth/login',
+      'auth-logout': '/auth/logout',
+      'auth-me': '/auth/me',
+      'auth-verify-request': '/auth/verify/request',
+      'auth-verify-confirm': '/auth/verify/confirm',
       api: '/api'
     }
   });

@@ -17,6 +17,14 @@ const loginSchema = z.object({
   password: z.string(),
 });
 
+const emailVerificationRequestSchema = z.object({
+  email: z.string().email().toLowerCase().trim(),
+});
+
+const emailVerificationConfirmSchema = z.object({
+  token: z.string().min(1),
+});
+
 // POST /auth/register
 router.post('/register', async (req, res) => {
   try {
@@ -194,6 +202,82 @@ router.get('/me', async (req, res) => {
     return;
   } catch (error) {
     console.error('Get user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+    return;
+  }
+});
+
+// POST /auth/verify/request
+router.post('/verify/request', async (req, res) => {
+  try {
+    const { email } = emailVerificationRequestSchema.parse(req.body);
+    
+    await AuthService.requestEmailVerification(email);
+    
+    // Always return success to prevent email enumeration
+    res.json({
+      success: true,
+      message: 'If the email exists, a verification link has been sent',
+    });
+    return;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email address',
+        errors: error.issues,
+      });
+    }
+    
+    console.error('Email verification request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+    return;
+  }
+});
+
+// POST /auth/verify/confirm
+router.post('/verify/confirm', async (req, res) => {
+  try {
+    const { token } = emailVerificationConfirmSchema.parse(req.body);
+    
+    await AuthService.verifyEmail(token);
+    
+    res.json({
+      success: true,
+      message: 'Email verified successfully',
+    });
+    return;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification token',
+        errors: error.issues,
+      });
+    }
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Invalid token')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or expired verification token',
+        });
+      }
+      if (error.message.includes('already verified')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already verified',
+        });
+      }
+    }
+    
+    console.error('Email verification confirm error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
