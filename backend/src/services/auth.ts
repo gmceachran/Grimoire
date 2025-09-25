@@ -1,6 +1,8 @@
 import argon2 from 'argon2';
 import { PrismaClient } from '@prisma/client';
 import { SessionService } from './session';
+import { EmailService } from './email';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -86,6 +88,25 @@ export class PasswordService {
  */
 export class AuthService {
   /**
+   * Normalize email address (lowercase, trim)
+   * @param email - Raw email address
+   * @returns string - Normalized email
+   */
+  static normalizeEmail(email: string): string {
+    return email.toLowerCase().trim();
+  }
+
+  /**
+   * Validate email format
+   * @param email - Email address to validate
+   * @returns boolean - True if valid
+   */
+  static isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  /**
    * Register a new user
    * @param email - User email
    * @param password - Plain text password
@@ -104,7 +125,7 @@ export class AuthService {
     }
 
     // Normalize email
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = this.normalizeEmail(email);
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -149,7 +170,7 @@ export class AuthService {
     userAgent?: string,
     ipAddress?: string
   ): Promise<{ user: any; sessionToken: string }> {
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = this.normalizeEmail(email);
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -246,7 +267,7 @@ export class AuthService {
    * @returns Promise<void>
    */
   static async requestEmailVerification(email: string): Promise<void> {
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = this.normalizeEmail(email);
     
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
@@ -257,8 +278,27 @@ export class AuthService {
       return;
     }
 
-    // TODO: Generate verification token and send email
-    // This will be implemented when we add email functionality
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Store verification token
+    await prisma.verificationToken.create({
+      data: {
+        token: verificationToken,
+        user_id: user.id,
+        purpose: 'EMAIL_VERIFICATION',
+        expires_at: expiresAt,
+      },
+    });
+
+    // Send verification email
+    const emailService = new EmailService();
+    await emailService.sendVerificationEmail(
+      normalizedEmail,
+      verificationToken,
+      user.display_name || undefined
+    );
   }
 
   /**
@@ -267,8 +307,41 @@ export class AuthService {
    * @returns Promise<void>
    */
   static async verifyEmail(token: string): Promise<void> {
-    // TODO: Implement email verification
-    // This will be implemented when we add email functionality
+    // Find verification token
+    const verificationToken = await prisma.verificationToken.findFirst({
+      where: {
+        token: token,
+        purpose: 'EMAIL_VERIFICATION',
+        expires_at: {
+          gt: new Date(),
+        },
+        consumed_at: null,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!verificationToken) {
+      throw new Error('Invalid or expired verification token');
+    }
+
+    // Check if user is already verified
+    if (verificationToken.user.email_verified_at) {
+      throw new Error('Email is already verified');
+    }
+
+    // Mark email as verified
+    await prisma.user.update({
+      where: { id: verificationToken.user_id },
+      data: { email_verified_at: new Date() },
+    });
+
+    // Mark token as used
+    await prisma.verificationToken.update({
+      where: { id: verificationToken.id },
+      data: { consumed_at: new Date() },
+    });
   }
 
   /**
@@ -277,7 +350,7 @@ export class AuthService {
    * @returns Promise<void>
    */
   static async requestPasswordReset(email: string): Promise<void> {
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = this.normalizeEmail(email);
     
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
@@ -288,8 +361,27 @@ export class AuthService {
       return;
     }
 
-    // TODO: Generate reset token and send email
-    // This will be implemented when we add email functionality
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Store reset token
+    await prisma.verificationToken.create({
+      data: {
+        token: resetToken,
+        user_id: user.id,
+        purpose: 'PASSWORD_RESET',
+        expires_at: expiresAt,
+      },
+    });
+
+    // Send reset email
+    const emailService = new EmailService();
+    await emailService.sendPasswordResetEmail(
+      normalizedEmail,
+      resetToken,
+      user.display_name || undefined
+    );
   }
 
   /**
@@ -299,7 +391,47 @@ export class AuthService {
    * @returns Promise<void>
    */
   static async resetPassword(token: string, newPassword: string): Promise<void> {
-    // TODO: Implement password reset
-    // This will be implemented when we add email functionality
+    // Validate new password
+    const passwordValidation = PasswordService.validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      throw new Error(passwordValidation.error);
+    }
+
+    // Find reset token
+    const resetToken = await prisma.verificationToken.findFirst({
+      where: {
+        token: token,
+        purpose: 'PASSWORD_RESET',
+        expires_at: {
+          gt: new Date(),
+        },
+        consumed_at: null,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!resetToken) {
+      throw new Error('Invalid or expired reset token');
+    }
+
+    // Hash new password
+    const hashedPassword = await PasswordService.hashPassword(newPassword);
+
+    // Update user password
+    await prisma.user.update({
+      where: { id: resetToken.user_id },
+      data: { password_hash: hashedPassword },
+    });
+
+    // Mark token as used
+    await prisma.verificationToken.update({
+      where: { id: resetToken.id },
+      data: { consumed_at: new Date() },
+    });
+
+    // Revoke all existing sessions for security
+    await SessionService.revokeAllUserSessions(resetToken.user_id);
   }
 }
