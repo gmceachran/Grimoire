@@ -212,6 +212,25 @@ methods: ['GET', 'POST', 'PUT', 'DELETE']
 - Morgan HTTP request logger
 - Development vs production formatting
 
+### Authentication Middleware
+
+**requireAuth Middleware**:
+- Validates session tokens from cookies
+- Extracts user information and adds to request object
+- Blocks unauthorized access to protected routes
+- Returns 401 for invalid/expired sessions
+
+**optionalAuth Middleware**:
+- Same validation as requireAuth but doesn't block requests
+- Adds user info to request if session exists
+- Useful for routes that work with or without authentication
+
+**Rate Limiting Middleware**:
+- **authRateLimit**: 5 attempts per 15 minutes for login/register/reset
+- **emailRateLimit**: 10 attempts per 15 minutes for email verification
+- **generalRateLimit**: 100 requests per 15 minutes for general API
+- Prevents brute force attacks and API abuse
+
 ---
 
 ## Data Flow
@@ -232,26 +251,48 @@ methods: ['GET', 'POST', 'PUT', 'DELETE']
 
 ```
 1. Client → POST /auth/login
-2. Route → Validate input (Zod schema)
-3. AuthService → Normalize email, find user
-4. AuthService → Check user status
-5. PasswordService → Verify password
-6. SessionService → Generate session token
-7. Database → Store session with metadata
-8. Response → Set HTTP-only cookie, return user data
+2. authRateLimit → Check rate limiting (5 attempts/15min)
+3. Route → Validate input (Zod schema)
+4. AuthService → Normalize email, find user
+5. AuthService → Check user status
+6. PasswordService → Verify password
+7. SessionService → Generate session token
+8. Database → Store session with metadata
+9. Response → Set secure HTTP-only cookie, return user data
 ```
 
 ### Email Verification Flow
 
 ```
 1. Client → POST /auth/verify/request
-2. AuthService → Find user, generate token
-3. Database → Store verification token
-4. EmailService → Send verification email
-5. User → Clicks email link
-6. Client → POST /auth/verify/confirm
-7. AuthService → Validate token, update user
-8. Database → Mark token as consumed
+2. emailRateLimit → Check rate limiting (10 attempts/15min)
+3. AuthService → Find user, generate token
+4. Database → Store verification token
+5. EmailService → Send verification email
+6. User → Clicks email link
+7. Client → POST /auth/verify/confirm
+8. AuthService → Validate token, update user
+9. Database → Mark token as consumed
+```
+
+### Protected Route Access Flow
+
+```
+1. Client → GET /auth/me (with session cookie)
+2. requireAuth → Validate session token
+3. requireAuth → Extract user info from session
+4. requireAuth → Add user to request object
+5. Route Handler → Access req.user directly
+6. Response → Return user data
+```
+
+### Failed Authentication Flow
+
+```
+1. Client → GET /auth/me (no session cookie)
+2. requireAuth → No session token found
+3. requireAuth → Return 401 "No active session"
+4. Client → Receives authentication error
 ```
 
 ---
@@ -277,6 +318,27 @@ methods: ['GET', 'POST', 'PUT', 'DELETE']
 - Token expiration (1 hour)
 - One-time use tokens
 - Email normalization and validation
+
+### Middleware Security
+
+**Authentication Guard**:
+- Validates session tokens on every protected route request
+- Blocks unauthorized access with 401 responses
+- Adds user context to request object for route handlers
+- Handles session expiration and validation errors
+
+**Rate Limiting Protection**:
+- **Authentication endpoints**: 5 attempts per 15 minutes (login, register, password reset)
+- **Email endpoints**: 10 attempts per 15 minutes (verification requests)
+- **General API**: 100 requests per 15 minutes
+- Prevents brute force attacks and API abuse
+- Returns 429 status with retry-after headers
+
+**Secure Cookie Configuration**:
+- **HttpOnly**: Prevents JavaScript access (XSS protection)
+- **SameSite=Strict**: Prevents cross-site request forgery (CSRF protection)
+- **Secure flag**: HTTPS-only in production environments
+- **Proper expiration**: Aligned with session lifetime (7 days)
 
 ### Input Validation
 

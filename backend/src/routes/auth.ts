@@ -2,6 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 import { AuthService } from '../services/auth';
 import { SessionService } from '../services/session';
+import { authRateLimit, emailRateLimit } from '../middleware/rateLimiting';
+import { requireAuth } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -35,7 +37,7 @@ const passwordResetConfirmSchema = z.object({
 });
 
 // POST /auth/register
-router.post('/register', async (req, res) => {
+router.post('/register', authRateLimit, async (req, res) => {
   try {
     const { email, password, displayName } = registerSchema.parse(req.body);
     
@@ -80,25 +82,30 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', authRateLimit, async (req, res) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
     
-    const result = await AuthService.login(email, password);
-    
-    // Create session
-    const { token, expiresAt } = await SessionService.createSession(
-      result.user.id,
-      req.get('User-Agent'),
+    const result = await AuthService.login(
+      email, 
+      password, 
+      req.get('User-Agent'), 
       req.ip
     );
     
-    // Set session cookie
+    // Extract session token from result
+    const { sessionToken: token } = result;
+    
+    // Set expiration for cookie (7 days)
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Set session cookie with enhanced security
     res.cookie('session_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      expires: expiresAt,
+      httpOnly: true,                    // Prevent XSS attacks
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'strict',               // Prevent CSRF attacks
+      expires: expiresAt,               // Use session expiration time
+      path: '/',                        // Available site-wide
     });
     
     res.json({
@@ -107,8 +114,9 @@ router.post('/login', async (req, res) => {
       user: {
         id: result.user.id,
         email: result.user.email,
-        displayName: result.user.displayName,
-        role: result.user.role,
+        displayName: result.user.display_name,
+        role: result.user.user_roles?.[0]?.role?.name || 'USER',
+        emailVerifiedAt: result.user.email_verified_at,
       },
     });
     return;
@@ -159,8 +167,13 @@ router.post('/logout', async (req, res) => {
       await SessionService.revokeSession(sessionInfo.sessionId);
     }
     
-    // Clear the cookie
-    res.clearCookie('session_token');
+    // Clear the cookie with same security settings
+    res.clearCookie('session_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+    });
     
     res.json({
       success: true,
@@ -177,35 +190,20 @@ router.post('/logout', async (req, res) => {
   }
 });
 
-// GET /auth/me
-router.get('/me', async (req, res) => {
+// GET /auth/me - Protected route
+router.get('/me', requireAuth, async (req, res) => {
   try {
-    const token = req.cookies.session_token;
-    
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'No active session',
-      });
-    }
-    
-    // Get user details (this method handles session validation internally)
-    const user = await AuthService.getCurrentUser(token);
-    
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid or expired session',
-      });
-    }
+    // User is already validated by requireAuth middleware
+    const user = req.user!;
     
     res.json({
       success: true,
       user: {
         id: user.id,
         email: user.email,
-        displayName: user.display_name,
-        role: user.user_roles?.[0]?.role?.name || 'user',
+        displayName: user.displayName,
+        role: user.role,
+        emailVerifiedAt: user.emailVerifiedAt,
       },
     });
     return;
@@ -220,7 +218,7 @@ router.get('/me', async (req, res) => {
 });
 
 // POST /auth/verify/request
-router.post('/verify/request', async (req, res) => {
+router.post('/verify/request', emailRateLimit, async (req, res) => {
   try {
     const { email } = emailVerificationRequestSchema.parse(req.body);
     
@@ -296,7 +294,7 @@ router.post('/verify/confirm', async (req, res) => {
 });
 
 // POST /auth/password/reset/request
-router.post('/password/reset/request', async (req, res) => {
+router.post('/password/reset/request', emailRateLimit, async (req, res) => {
   try {
     const { email } = passwordResetRequestSchema.parse(req.body);
     
@@ -327,7 +325,7 @@ router.post('/password/reset/request', async (req, res) => {
 });
 
 // POST /auth/password/reset/confirm
-router.post('/password/reset/confirm', async (req, res) => {
+router.post('/password/reset/confirm', authRateLimit, async (req, res) => {
   try {
     const { token, newPassword } = passwordResetConfirmSchema.parse(req.body);
     
